@@ -120,15 +120,52 @@ The server starts on `PORT` (default 3000) and exposes:
 ## 5. Deploy it somewhere reachable from the internet
 
 Meta needs to reach your `/webhook` endpoint over HTTPS. Any small always-on
-host works, e.g. Railway, Render, Fly.io, or a small VPS. Set the same
-environment variables there as in your local `.env`, and mount a persistent
-disk/volume for the SQLite database file (`DATABASE_FILE`, default
-`./data/orders.sqlite`) so orders survive restarts/deploys.
+host works, e.g. a VPS, Railway, Render, or Fly.io.
 
-Once deployed, go back to Meta → WhatsApp → Configuration → Webhook, and
-set:
+### Deploying to a Hostinger VPS
 
-- **Callback URL**: `https://your-domain.com/webhook`
+A point a domain (or subdomain, e.g. `bot.yourdomain.com`) at your VPS
+first — in Hostinger's DNS settings, add an **A record** pointing to your
+VPS's IP address. DNS changes can take a few minutes to propagate.
+
+SSH into your VPS, then run the setup script (Ubuntu/Debian):
+
+```bash
+git clone https://github.com/harisnidal/abu-nidal-trading-whatsapp-bot.git
+cd abu-nidal-trading-whatsapp-bot
+bash deploy/setup.sh bot.yourdomain.com
+```
+
+This installs Node.js, nginx and certbot, clones/builds the app, sets up
+an `abu-nidal-bot` systemd service (so it auto-restarts and survives
+reboots), and configures nginx as a reverse proxy. It will pause and tell
+you to:
+
+1. Edit `.env` with your real WhatsApp/Anthropic/dashboard values
+   (`nano ~/abu-nidal-trading-whatsapp-bot/.env`).
+2. Run `sudo certbot --nginx -d bot.yourdomain.com` to get a free HTTPS
+   certificate.
+3. Start the service: `sudo systemctl start abu-nidal-bot`.
+
+Useful commands afterward:
+
+```bash
+sudo systemctl status abu-nidal-bot   # is it running?
+sudo journalctl -u abu-nidal-bot -f    # live logs
+sudo systemctl restart abu-nidal-bot   # after editing .env or code
+```
+
+To deploy an update later: `git pull && npm ci && npm run build && sudo systemctl restart abu-nidal-bot` from inside `~/abu-nidal-trading-whatsapp-bot`.
+
+Make sure `DATABASE_FILE` points somewhere on persistent disk (the default
+`./data/orders.sqlite`, inside the app folder, is fine on a VPS — it isn't
+wiped like on some container platforms).
+
+### Point Meta at your live URL
+
+Once deployed, go to Meta → WhatsApp → Configuration → Webhook, and set:
+
+- **Callback URL**: `https://bot.yourdomain.com/webhook`
 - **Verify token**: the same value as `WHATSAPP_VERIFY_TOKEN` in your `.env`
 
 Then subscribe the webhook to the `messages` field.
@@ -157,6 +194,7 @@ src/dashboardApi.ts   REST API backing the dashboard
 src/basicAuth.ts         Dashboard login
 src/server.ts              Express app wiring it all together
 public/                     Dashboard frontend (plain HTML/CSS/JS)
+deploy/                     Hostinger VPS setup script, systemd + nginx configs
 ```
 
 ## Not included yet (roadmap)
