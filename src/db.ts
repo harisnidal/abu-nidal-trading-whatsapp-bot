@@ -147,6 +147,38 @@ export function listOrders(): (Order & { customer_phone: string; customer_name: 
     .all() as (Order & { customer_phone: string; customer_name: string | null })[];
 }
 
+export interface OrderStats {
+  total: number;
+  byStatus: Record<string, number>;
+  conversionRate: number | null;
+}
+
+export function getOrderStats(): OrderStats {
+  const rows = db
+    .prepare("SELECT status, COUNT(*) AS count FROM orders GROUP BY status")
+    .all() as { status: string; count: number }[];
+
+  const byStatus: Record<string, number> = {};
+  let total = 0;
+  for (const row of rows) {
+    byStatus[row.status] = row.count;
+    total += row.count;
+  }
+
+  const fulfilled = byStatus["fulfilled"] ?? 0;
+  const cancelled = byStatus["cancelled"] ?? 0;
+  // Conversion rate is measured against inquiries that have been resolved
+  // one way or another (fulfilled or cancelled) — still-pending/confirmed
+  // ones haven't reached an outcome yet, so they're excluded from the rate.
+  const resolved = fulfilled + cancelled;
+
+  return {
+    total,
+    byStatus,
+    conversionRate: resolved > 0 ? fulfilled / resolved : null,
+  };
+}
+
 export function listCustomers(): Customer[] {
   return db
     .prepare("SELECT * FROM customers ORDER BY created_at DESC")

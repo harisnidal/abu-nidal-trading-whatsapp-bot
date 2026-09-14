@@ -12,6 +12,37 @@
   </header>
 
   <main>
+    <section id="stats-section">
+      <h2>Conversion</h2>
+      <div class="stats-row">
+        <div class="stat-tile">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Total inquiries</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-value" id="stat-pending">—</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-value" id="stat-fulfilled">—</div>
+          <div class="stat-label">Fulfilled (sold)</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-value" id="stat-cancelled">—</div>
+          <div class="stat-label">Cancelled</div>
+        </div>
+        <div class="stat-tile stat-tile-accent">
+          <div class="stat-value" id="stat-conversion">—</div>
+          <div class="stat-label">Conversion rate</div>
+        </div>
+      </div>
+      <p class="stats-note">
+        Conversion rate = fulfilled ÷ (fulfilled + cancelled). Mark an order's
+        status below once you know the outcome — the AI can't know whether a
+        sale actually happened, only your team can.
+      </p>
+    </section>
+
     <section>
       <h2>Order Inquiries</h2>
       <table id="orders-table">

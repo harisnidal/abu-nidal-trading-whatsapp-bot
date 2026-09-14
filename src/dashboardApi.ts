@@ -4,12 +4,17 @@ import {
   listCustomers,
   listMessagesForCustomer,
   updateOrderStatus,
+  getOrderStats,
 } from "./db";
 
 export const dashboardApiRouter = Router();
 
 dashboardApiRouter.get("/api/orders", (_req, res) => {
   res.json(listOrders());
+});
+
+dashboardApiRouter.get("/api/stats", (_req, res) => {
+  res.json(getOrderStats());
 });
 
 dashboardApiRouter.post("/api/orders/:id/status", (req, res) => {

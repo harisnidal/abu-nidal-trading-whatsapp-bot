@@ -11,6 +11,16 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
+async function loadStats() {
+  const stats = await fetchJson("/api/stats");
+  document.querySelector("#stat-total").textContent = stats.total;
+  document.querySelector("#stat-pending").textContent = stats.byStatus.pending || 0;
+  document.querySelector("#stat-fulfilled").textContent = stats.byStatus.fulfilled || 0;
+  document.querySelector("#stat-cancelled").textContent = stats.byStatus.cancelled || 0;
+  document.querySelector("#stat-conversion").textContent =
+    stats.conversionRate === null ? "—" : `${Math.round(stats.conversionRate * 100)}%`;
+}
+
 async function loadOrders() {
   const orders = await fetchJson("/api/orders");
   const tbody = document.querySelector("#orders-table tbody");
@@ -24,6 +34,7 @@ async function loadOrders() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: e.target.value }),
         });
+        loadStats();
       },
     });
     for (const status of ["pending", "confirmed", "cancelled", "fulfilled"]) {
@@ -83,9 +94,11 @@ document.querySelector("#close-conversation").addEventListener("click", () => {
   document.querySelector("#conversation-section").hidden = true;
 });
 
+loadStats();
 loadOrders();
 loadCustomers();
 setInterval(() => {
+  loadStats();
   loadOrders();
   loadCustomers();
 }, 15000);

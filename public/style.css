@@ -70,6 +70,44 @@ button {
   font-size: 13px;
 }
 
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stat-tile {
+  flex: 1 1 120px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.stat-tile-accent {
+  border-color: var(--accent);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.stat-tile-accent .stat-value {
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.stats-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 0 0;
+}
+
 .msg {
   padding: 6px 10px;
   border-radius: 8px;
