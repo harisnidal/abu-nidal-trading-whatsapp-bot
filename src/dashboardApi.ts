@@ -1,25 +1,25 @@
 import { Router } from "express";
 import {
-  listBookings,
+  listOrders,
   listCustomers,
   listMessagesForCustomer,
-  updateBookingStatus,
+  updateOrderStatus,
 } from "./db";
 
 export const dashboardApiRouter = Router();
 
-dashboardApiRouter.get("/api/bookings", (_req, res) => {
-  res.json(listBookings());
+dashboardApiRouter.get("/api/orders", (_req, res) => {
+  res.json(listOrders());
 });
 
-dashboardApiRouter.post("/api/bookings/:id/status", (req, res) => {
+dashboardApiRouter.post("/api/orders/:id/status", (req, res) => {
   const id = Number(req.params.id);
   const { status } = req.body as { status?: string };
   if (!status) {
     res.status(400).json({ error: "status is required" });
     return;
   }
-  updateBookingStatus(id, status);
+  updateOrderStatus(id, status);
   res.json({ ok: true });
 });
 

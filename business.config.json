@@ -1,5 +1,6 @@
 {
   "businessName": "Abu Nidal Trading",
+  "businessType": "Building & construction materials trading",
   "defaultLanguage": "English",
   "supportedLanguages": ["Arabic", "English"],
   "timezone": "Asia/Dubai",
@@ -20,22 +21,48 @@
     { "day": "Thursday", "open": "09:00", "close": "18:00" },
     { "day": "Friday", "closed": true }
   ],
-  "services": [
+  "products": [
     {
-      "name": "REPLACE_WITH_SERVICE_1_NAME",
-      "description": "REPLACE_WITH_SHORT_DESCRIPTION",
-      "durationMinutes": 60,
-      "price": "REPLACE_WITH_PRICE (e.g. AED 150)"
+      "name": "Fibreglass Mesh",
+      "description": "REPLACE_WITH_SPEC (e.g. size/weight/roll length)",
+      "unit": "roll",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
     },
     {
-      "name": "REPLACE_WITH_SERVICE_2_NAME",
-      "description": "REPLACE_WITH_SHORT_DESCRIPTION",
-      "durationMinutes": 30,
-      "price": "REPLACE_WITH_PRICE"
+      "name": "Corner Bead",
+      "description": "REPLACE_WITH_SPEC (e.g. length, material - metal/PVC)",
+      "unit": "piece",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
+    },
+    {
+      "name": "Stretch Film",
+      "description": "REPLACE_WITH_SPEC (e.g. width, micron, roll weight)",
+      "unit": "roll",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
+    },
+    {
+      "name": "Clear Tape",
+      "description": "REPLACE_WITH_SPEC (e.g. width x length)",
+      "unit": "roll",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
+    },
+    {
+      "name": "Brown Tape",
+      "description": "REPLACE_WITH_SPEC (e.g. width x length)",
+      "unit": "roll",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
+    },
+    {
+      "name": "Masking Tape",
+      "description": "REPLACE_WITH_SPEC (e.g. width x length)",
+      "unit": "roll",
+      "price": "REPLACE_WITH_PRICE_PER_UNIT"
     }
   ],
   "policies": [
-    "REPLACE_WITH_ANY_BOOKING_POLICY (e.g. cancellations require 2 hours notice)"
+    "REPLACE_WITH_MINIMUM_ORDER_QUANTITY (e.g. minimum 10 rolls per item)",
+    "REPLACE_WITH_DELIVERY_POLICY (e.g. free delivery above AED 500, otherwise pickup only)",
+    "REPLACE_WITH_PAYMENT_TERMS (e.g. cash on delivery, bank transfer, credit for regular clients)"
   ],
   "greetingMessage": "Welcome to Abu Nidal Trading! How can I help you today? — أهلاً بك في أبو نضال تريدينغ، كيف يمكنني مساعدتك اليوم؟"
 }

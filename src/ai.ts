@@ -1,39 +1,40 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env, BusinessConfig } from "./config";
-import { Message, createBooking } from "./db";
+import { Message, createOrder } from "./db";
 
 const anthropic = new Anthropic({ apiKey: env.anthropicApiKey });
 
-const CREATE_BOOKING_TOOL: Anthropic.Tool = {
-  name: "create_booking",
+const CREATE_ORDER_TOOL: Anthropic.Tool = {
+  name: "create_order_inquiry",
   description:
-    "Record a confirmed booking request once the customer has given enough " +
-    "detail: which service, and a specific date/time. Only call this once " +
-    "per booking, after the customer has agreed to the details.",
+    "Record a customer's order/quote request once they've told you which " +
+    "product and how much they want. Only call this once per request, " +
+    "after the customer has confirmed the product and quantity.",
   input_schema: {
     type: "object",
     properties: {
-      service: {
+      product: {
         type: "string",
-        description: "The exact service name from the business's service list.",
+        description: "The exact product name from the business's product list.",
       },
-      requestedTime: {
+      quantity: {
         type: "string",
         description:
-          "The customer's requested date and time, in plain readable text " +
-          "(e.g. 'Tomorrow 4pm' or '2026-09-20 16:00'). Use the customer's " +
-          "own wording/timezone if a precise time isn't given.",
+          "The quantity requested, in the customer's own words, including " +
+          "unit if given (e.g. '20 rolls', '50 pieces').",
       },
       customerName: {
         type: "string",
-        description: "The customer's name, if they have given it.",
+        description: "The customer's name or company name, if given.",
       },
       notes: {
         type: "string",
-        description: "Any extra details relevant to the booking.",
+        description:
+          "Any extra details: delivery vs pickup, delivery address, specs " +
+          "requested, urgency, etc.",
       },
     },
-    required: ["service", "requestedTime"],
+    required: ["product", "quantity"],
   },
 };
 
@@ -44,20 +45,20 @@ function buildSystemPrompt(business: BusinessConfig): string {
     )
     .join("\n");
 
-  const services = business.services
+  const products = business.products
     .map(
-      (s) =>
-        `- ${s.name}: ${s.description} (duration: ${s.durationMinutes} min, price: ${s.price})`
+      (p) =>
+        `- ${p.name}: ${p.description} (sold per ${p.unit}, price: ${p.price})`
     )
     .join("\n");
 
   const policies = business.policies.map((p) => `- ${p}`).join("\n");
 
-  return `You are the WhatsApp booking assistant for "${business.businessName}", ${
-    business.location.address
-  }.
+  return `You are the WhatsApp sales assistant for "${business.businessName}", a ${
+    business.businessType
+  } based at ${business.location.address}.
 
-Your job: answer customer questions and take booking requests, 24/7, warmly and efficiently.
+Your job: answer customer questions and take order/quote requests, 24/7, warmly and efficiently.
 
 LANGUAGE: Always reply in the same language the customer is writing in. You support at least: ${business.supportedLanguages.join(
     ", "
@@ -73,32 +74,34 @@ Location: ${business.location.address} (${business.location.googleMapsUrl})
 OPENING HOURS
 ${hours}
 
-SERVICES
-${services}
+PRODUCTS
+${products}
 
 POLICIES
 ${policies || "(none listed)"}
 
-BOOKING FLOW
-1. Understand which service the customer wants.
-2. Confirm a specific date and time that falls within opening hours.
-3. Once the customer has confirmed both the service and the time, call the
-   create_booking tool exactly once to record it.
-4. After the tool call, confirm the booking back to the customer in a short,
-   friendly message, and remind them the booking is pending confirmation
-   from the team (do not claim it is 100% guaranteed).
+ORDER FLOW
+1. Understand which product(s) the customer wants, and the quantity.
+2. If they ask for a price, quote what's listed above; if a price says
+   "on request" or similar, tell them the team will confirm pricing.
+3. Once the customer has confirmed a specific product and quantity, call
+   the create_order_inquiry tool exactly once to record it.
+4. After the tool call, confirm back to the customer in a short, friendly
+   message, and let them know the team will follow up to confirm final
+   price, stock availability, and delivery/pickup details (do not promise
+   a price or delivery time is 100% final).
 
 RULES
-- Never invent services, prices, or hours that aren't listed above.
+- Never invent products, prices, specs, or hours that aren't listed above.
+- If a product isn't in the list, say it's not something you carry and
+  suggest contacting the business directly.
 - If you don't know something, say so and offer the business contact info.
-- Keep replies short and natural, like a real WhatsApp conversation, not an email.
-- If the customer asks for something outside these services, politely say
-  it's not offered and suggest contacting the business directly.`;
+- Keep replies short and natural, like a real WhatsApp conversation, not an email.`;
 }
 
 export interface AssistantResult {
   replyText: string;
-  bookingCreated: boolean;
+  orderCreated: boolean;
 }
 
 export async function runAssistant(
@@ -113,16 +116,16 @@ export async function runAssistant(
     content: m.body,
   }));
 
-  let bookingCreated = false;
+  let orderCreated = false;
 
   // Tool-use loop: keep calling the model until it returns a plain text
-  // turn (allowing at most one create_booking call along the way).
+  // turn (allowing at most one create_order_inquiry call along the way).
   for (let iteration = 0; iteration < 4; iteration++) {
     const response = await anthropic.messages.create({
       model: env.anthropicModel,
       max_tokens: 1024,
       system,
-      tools: [CREATE_BOOKING_TOOL],
+      tools: [CREATE_ORDER_TOOL],
       messages,
     });
 
@@ -132,7 +135,7 @@ export async function runAssistant(
         .map((block) => block.text)
         .join("\n")
         .trim();
-      return { replyText: text || "Sorry, could you repeat that?", bookingCreated };
+      return { replyText: text || "Sorry, could you repeat that?", orderCreated };
     }
 
     messages.push({ role: "assistant", content: response.content });
@@ -140,24 +143,24 @@ export async function runAssistant(
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
     for (const block of response.content) {
       if (block.type !== "tool_use") continue;
-      if (block.name === "create_booking") {
+      if (block.name === "create_order_inquiry") {
         const input = block.input as {
-          service: string;
-          requestedTime: string;
+          product: string;
+          quantity: string;
           customerName?: string;
           notes?: string;
         };
-        createBooking(
+        createOrder(
           customerId,
-          input.service,
-          input.requestedTime,
+          input.product,
+          input.quantity,
           input.notes ?? input.customerName ?? null
         );
-        bookingCreated = true;
+        orderCreated = true;
         toolResults.push({
           type: "tool_result",
           tool_use_id: block.id,
-          content: "Booking recorded.",
+          content: "Order inquiry recorded.",
         });
       } else {
         toolResults.push({
@@ -174,6 +177,6 @@ export async function runAssistant(
   return {
     replyText:
       "Thanks for your message! Let me get back to you shortly, or feel free to call us directly.",
-    bookingCreated,
+    orderCreated,
   };
 }

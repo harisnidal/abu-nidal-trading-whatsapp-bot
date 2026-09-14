@@ -11,32 +11,33 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
-async function loadBookings() {
-  const bookings = await fetchJson("/api/bookings");
-  const tbody = document.querySelector("#bookings-table tbody");
+async function loadOrders() {
+  const orders = await fetchJson("/api/orders");
+  const tbody = document.querySelector("#orders-table tbody");
   tbody.innerHTML = "";
-  for (const b of bookings) {
+  for (const o of orders) {
     const statusSelect = el("select", {
-      value: b.status,
+      value: o.status,
       onchange: async (e) => {
-        await fetchJson(`/api/bookings/${b.id}/status`, {
+        await fetchJson(`/api/orders/${o.id}/status`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: e.target.value }),
         });
       },
     });
-    for (const status of ["pending", "confirmed", "cancelled", "completed"]) {
-      statusSelect.append(el("option", { value: status, text: status, selected: status === b.status }));
+    for (const status of ["pending", "confirmed", "cancelled", "fulfilled"]) {
+      statusSelect.append(el("option", { value: status, text: status, selected: status === o.status }));
     }
 
     tbody.append(
       el("tr", {}, [
-        el("td", { textContent: b.requested_time }),
-        el("td", { textContent: b.customer_name || "—" }),
-        el("td", { textContent: b.customer_phone }),
-        el("td", { textContent: b.service }),
-        el("td", { textContent: b.notes || "" }),
+        el("td", { textContent: o.created_at }),
+        el("td", { textContent: o.customer_name || "—" }),
+        el("td", { textContent: o.customer_phone }),
+        el("td", { textContent: o.product }),
+        el("td", { textContent: o.quantity }),
+        el("td", { textContent: o.notes || "" }),
         el("td", {}, [statusSelect]),
       ])
     );
@@ -82,9 +83,9 @@ document.querySelector("#close-conversation").addEventListener("click", () => {
   document.querySelector("#conversation-section").hidden = true;
 });
 
-loadBookings();
+loadOrders();
 loadCustomers();
 setInterval(() => {
-  loadBookings();
+  loadOrders();
   loadCustomers();
 }, 15000);

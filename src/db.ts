@@ -26,18 +26,18 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
-  CREATE TABLE IF NOT EXISTS bookings (
+  CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL REFERENCES customers(id),
-    service TEXT NOT NULL,
-    requested_time TEXT NOT NULL,
+    product TEXT NOT NULL,
+    quantity TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE INDEX IF NOT EXISTS idx_messages_customer ON messages(customer_id);
-  CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
+  CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 `);
 
 export interface Customer {
@@ -56,11 +56,11 @@ export interface Message {
   created_at: string;
 }
 
-export interface Booking {
+export interface Order {
   id: number;
   customer_id: number;
-  service: string;
-  requested_time: string;
+  product: string;
+  quantity: string;
   status: string;
   notes: string | null;
   created_at: string;
@@ -120,31 +120,31 @@ export function getRecentMessages(
   return rows.reverse();
 }
 
-export function createBooking(
+export function createOrder(
   customerId: number,
-  service: string,
-  requestedTime: string,
+  product: string,
+  quantity: string,
   notes: string | null
-): Booking {
+): Order {
   const result = db
     .prepare(
-      "INSERT INTO bookings (customer_id, service, requested_time, notes) VALUES (?, ?, ?, ?)"
+      "INSERT INTO orders (customer_id, product, quantity, notes) VALUES (?, ?, ?, ?)"
     )
-    .run(customerId, service, requestedTime, notes);
+    .run(customerId, product, quantity, notes);
   return db
-    .prepare("SELECT * FROM bookings WHERE id = ?")
-    .get(result.lastInsertRowid) as Booking;
+    .prepare("SELECT * FROM orders WHERE id = ?")
+    .get(result.lastInsertRowid) as Order;
 }
 
-export function listBookings(): (Booking & { customer_phone: string; customer_name: string | null })[] {
+export function listOrders(): (Order & { customer_phone: string; customer_name: string | null })[] {
   return db
     .prepare(
-      `SELECT bookings.*, customers.phone AS customer_phone, customers.name AS customer_name
-       FROM bookings
-       JOIN customers ON customers.id = bookings.customer_id
-       ORDER BY bookings.created_at DESC`
+      `SELECT orders.*, customers.phone AS customer_phone, customers.name AS customer_name
+       FROM orders
+       JOIN customers ON customers.id = orders.customer_id
+       ORDER BY orders.created_at DESC`
     )
-    .all() as (Booking & { customer_phone: string; customer_name: string | null })[];
+    .all() as (Order & { customer_phone: string; customer_name: string | null })[];
 }
 
 export function listCustomers(): Customer[] {
@@ -159,6 +159,6 @@ export function listMessagesForCustomer(customerId: number): Message[] {
     .all(customerId) as Message[];
 }
 
-export function updateBookingStatus(id: number, status: string): void {
-  db.prepare("UPDATE bookings SET status = ? WHERE id = ?").run(status, id);
+export function updateOrderStatus(id: number, status: string): void {
+  db.prepare("UPDATE orders SET status = ? WHERE id = ?").run(status, id);
 }

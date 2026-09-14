@@ -1,16 +1,18 @@
-# Abu Nidal Trading — WhatsApp AI Booking Bot
+# Abu Nidal Trading — WhatsApp AI Sales Assistant
 
-An AI assistant that answers customer WhatsApp messages 24/7, using your
-business's services, prices, hours and location, and records booking
-requests into a dashboard — so nobody has to sit on the phone taking
-bookings.
+An AI assistant that answers customer WhatsApp messages 24/7 about your
+trading materials, and records order/quote inquiries into a dashboard — so
+nobody has to sit on the phone taking orders.
 
 - Replies in the customer's own language (Arabic, English, or others)
-- Knows your services, prices, opening hours, and location
-- Records booking requests (service + date/time) automatically
+- Knows your products, prices, opening hours, and location
+- Records order inquiries (product + quantity) automatically
 - Simple password-protected dashboard to see all customers, conversations
-  and bookings in one place
+  and order inquiries in one place
 - No deposit/payment collection in this version (can be added later)
+
+Current product list (edit in `business.config.json`): Fibreglass Mesh,
+Corner Bead, Stretch Film, Clear Tape, Brown Tape, Masking Tape.
 
 ---
 
@@ -84,7 +86,7 @@ Edit `.env` and fill in:
 - `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD` — login for the dashboard.
 
 Then edit **`business.config.json`** in the project root with your real
-services, prices, opening hours, address, and contact info — this is what
+products, prices, opening hours, address, and contact info — this is what
 the AI is "trained" on. No coding needed; it's just the source of truth the
 AI reads before every reply. Update it any time your prices/hours change,
 no redeploy of code required (just restart the server, or edit the file
@@ -110,7 +112,7 @@ npm start
 The server starts on `PORT` (default 3000) and exposes:
 
 - `POST /webhook` and `GET /webhook` — WhatsApp Cloud API webhook
-- `/dashboard` — the booking dashboard (HTTP Basic Auth login)
+- `/dashboard` — the orders dashboard (HTTP Basic Auth login)
 - `/healthz` — health check
 
 ---
@@ -121,7 +123,7 @@ Meta needs to reach your `/webhook` endpoint over HTTPS. Any small always-on
 host works, e.g. Railway, Render, Fly.io, or a small VPS. Set the same
 environment variables there as in your local `.env`, and mount a persistent
 disk/volume for the SQLite database file (`DATABASE_FILE`, default
-`./data/bookings.sqlite`) so bookings survive restarts/deploys.
+`./data/orders.sqlite`) so orders survive restarts/deploys.
 
 Once deployed, go back to Meta → WhatsApp → Configuration → Webhook, and
 set:
@@ -136,20 +138,20 @@ Then subscribe the webhook to the `messages` field.
 ## 6. Try it
 
 Message the connected WhatsApp number from your own phone. The AI should
-greet you, answer questions about services/prices/hours, and create a
-booking once you agree on a service and time — check the dashboard at
-`/dashboard` to see it appear.
+greet you, answer questions about products/prices/hours, and record an
+order inquiry once you agree on a product and quantity — check the
+dashboard at `/dashboard` to see it appear.
 
 ---
 
 ## Project structure
 
 ```
-business.config.json   Business data the AI is grounded on (services, hours, prices...)
+business.config.json   Business data the AI is grounded on (products, hours, prices...)
 src/config.ts           Env vars + business config loader
-src/db.ts                SQLite schema and queries (customers, messages, bookings)
+src/db.ts                SQLite schema and queries (customers, messages, orders)
 src/whatsapp.ts          WhatsApp Cloud API send/receive helpers
-src/ai.ts                Claude integration: system prompt + booking tool
+src/ai.ts                Claude integration: system prompt + order-inquiry tool
 src/webhook.ts            WhatsApp webhook (verify + inbound message handling)
 src/dashboardApi.ts   REST API backing the dashboard
 src/basicAuth.ts         Dashboard login

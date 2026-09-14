@@ -2,7 +2,7 @@
   "name": "abu-nidal-trading-whatsapp-bot",
   "version": "0.1.0",
   "private": true,
-  "description": "WhatsApp AI booking assistant for Abu Nidal Trading",
+  "description": "WhatsApp AI sales assistant for Abu Nidal Trading",
   "type": "commonjs",
   "engines": {
     "node": ">=18.17"

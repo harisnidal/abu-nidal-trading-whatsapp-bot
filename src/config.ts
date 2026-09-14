@@ -23,7 +23,7 @@ export const env = {
   dashboardUsername: process.env.DASHBOARD_USERNAME ?? "admin",
   dashboardPassword: process.env.DASHBOARD_PASSWORD ?? "change-me",
 
-  databaseFile: process.env.DATABASE_FILE ?? "./data/bookings.sqlite",
+  databaseFile: process.env.DATABASE_FILE ?? "./data/orders.sqlite",
 };
 
 export interface OpeningHour {
@@ -33,22 +33,23 @@ export interface OpeningHour {
   closed?: boolean;
 }
 
-export interface Service {
+export interface Product {
   name: string;
   description: string;
-  durationMinutes: number;
+  unit: string;
   price: string;
 }
 
 export interface BusinessConfig {
   businessName: string;
+  businessType: string;
   defaultLanguage: string;
   supportedLanguages: string[];
   timezone: string;
   location: { address: string; googleMapsUrl: string };
   contact: { phoneDisplay: string; email: string };
   openingHours: OpeningHour[];
-  services: Service[];
+  products: Product[];
   policies: string[];
   greetingMessage: string;
 }
