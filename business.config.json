@@ -1,0 +1,41 @@
+{
+  "businessName": "Abu Nidal Trading",
+  "defaultLanguage": "English",
+  "supportedLanguages": ["Arabic", "English"],
+  "timezone": "Asia/Dubai",
+  "location": {
+    "address": "REPLACE_WITH_ADDRESS",
+    "googleMapsUrl": "REPLACE_WITH_MAPS_LINK"
+  },
+  "contact": {
+    "phoneDisplay": "REPLACE_WITH_DISPLAY_NUMBER",
+    "email": "REPLACE_WITH_EMAIL"
+  },
+  "openingHours": [
+    { "day": "Saturday", "open": "09:00", "close": "18:00" },
+    { "day": "Sunday", "open": "09:00", "close": "18:00" },
+    { "day": "Monday", "open": "09:00", "close": "18:00" },
+    { "day": "Tuesday", "open": "09:00", "close": "18:00" },
+    { "day": "Wednesday", "open": "09:00", "close": "18:00" },
+    { "day": "Thursday", "open": "09:00", "close": "18:00" },
+    { "day": "Friday", "closed": true }
+  ],
+  "services": [
+    {
+      "name": "REPLACE_WITH_SERVICE_1_NAME",
+      "description": "REPLACE_WITH_SHORT_DESCRIPTION",
+      "durationMinutes": 60,
+      "price": "REPLACE_WITH_PRICE (e.g. AED 150)"
+    },
+    {
+      "name": "REPLACE_WITH_SERVICE_2_NAME",
+      "description": "REPLACE_WITH_SHORT_DESCRIPTION",
+      "durationMinutes": 30,
+      "price": "REPLACE_WITH_PRICE"
+    }
+  ],
+  "policies": [
+    "REPLACE_WITH_ANY_BOOKING_POLICY (e.g. cancellations require 2 hours notice)"
+  ],
+  "greetingMessage": "Welcome to Abu Nidal Trading! How can I help you today? — أهلاً بك في أبو نضال تريدينغ، كيف يمكنني مساعدتك اليوم؟"
+}
